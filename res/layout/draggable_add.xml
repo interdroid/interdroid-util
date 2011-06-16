@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent" android:id="@+id/relativeLayout1"
+	android:layout_height="wrap_content" android:gravity="right">
+	<ImageButton android:src="@drawable/add_button" android:padding="5sp" android:background="@null"
+		android:layout_gravity="center_vertical|right" android:id="@+id/add_button"
+		android:layout_width="wrap_content" android:layout_height="wrap_content"></ImageButton>
+</FrameLayout>
