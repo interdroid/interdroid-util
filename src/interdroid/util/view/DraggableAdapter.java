@@ -1,5 +1,7 @@
 package interdroid.util.view;
 
-public interface DraggableAdapter extends RemoveListener, DropListener {
+import android.widget.ListAdapter;
+
+public interface DraggableAdapter extends ListAdapter, RemoveListener, DropListener {
 
 }

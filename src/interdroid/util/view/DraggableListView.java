@@ -12,6 +12,7 @@ import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ImageButton;
@@ -39,6 +40,50 @@ public class DraggableListView extends ListView {
 	ImageView mDragView;
 
 	private AddListener mAddListener;
+
+	// List views do not properly measure their height. This hack gets around the problem.
+	protected void onMeasure (int widthMeasureSpec, int heightMeasureSpec) {
+		// Let our parent figure it out most measurements for us
+		super.onMeasure( widthMeasureSpec, heightMeasureSpec );
+		logger.debug("onMeasure "+this+
+				": width: "+decodeMeasureSpec( widthMeasureSpec )+
+				"; height: "+decodeMeasureSpec( heightMeasureSpec )+
+				"; measuredHeight: "+getMeasuredHeight()+
+				"; measuredWidth: "+getMeasuredWidth() );
+
+		int height = 0; // getMeasuredHeight();
+		// logger.debug("Header height is: {}", height);
+		ListAdapter adapter = getAdapter();
+		int count = adapter.getCount();
+		for (int i = 0; i < count; i++) {
+			View child =  adapter.getView(i, null, null);
+			child.measure(widthMeasureSpec, heightMeasureSpec);
+			height += child.getMeasuredHeight();
+		}
+
+		logger.debug("Setting measured dimension to: {}x{}", getMeasuredWidth(), height);
+
+		setMeasuredDimension( getMeasuredWidth(), height );
+	}
+
+	private String decodeMeasureSpec( int measureSpec ) {
+		int mode = View.MeasureSpec.getMode( measureSpec );
+		String modeString = "<> ";
+		switch( mode ) {
+		case View.MeasureSpec.UNSPECIFIED:
+			modeString = "UNSPECIFIED ";
+			break;
+
+		case View.MeasureSpec.EXACTLY:
+			modeString = "EXACTLY ";
+			break;
+
+		case View.MeasureSpec.AT_MOST:
+			modeString = "AT_MOST ";
+			break;
+		}
+		return modeString+Integer.toString( View.MeasureSpec.getSize( measureSpec ) );
+	}
 
 	private DropListener mInnerDropListener =
 		new DropListener() {
@@ -108,6 +153,10 @@ public class DraggableListView extends ListView {
 		super(context, attrs);
 	}
 
+	public DraggableListView(Context context) {
+		super(context);
+	}
+
 	public void setAllowLeftRightMovement(boolean b) {
 		mAllowLeftRightMovement = b;
 	}
@@ -172,9 +221,12 @@ public class DraggableListView extends ListView {
 		}
 
 		if (touched != INVALID_POSITION && touched != 0) {
-			View tView = getChildAt(touched).findViewById(R.id.drag_handle);
-			minX = tView.getLeft();
-			maxX = tView.getRight();
+			View tView = getChildAt(touched);
+			if (tView != null) {
+				tView = tView.findViewById(R.id.drag_handle);
+				minX = tView.getLeft();
+				maxX = tView.getRight();
+			}
 		}
 
 		if (!mRemoving && action == MotionEvent.ACTION_DOWN && x >= minX && x <= maxX) {
@@ -228,7 +280,7 @@ public class DraggableListView extends ListView {
 			}
 		} else {
 			switch (action) {
-			case MotionEvent.ACTION_DOWN:
+			case MotionEvent.ACTION_DOWN: {
 				mStartPosition = touched;
 				int mItemPosition = mStartPosition - getFirstVisiblePosition();
 				logger.debug("Drag: {}", mItemPosition);
@@ -238,16 +290,21 @@ public class DraggableListView extends ListView {
 					startDrag(mItemPosition,y);
 					logger.debug("Drag Start: {} {} :" + y, getTop(), getBottom());
 					drag(mAllowLeftRightMovement ? x : 0,y);
+
+					// Now we need to try to turn off interception
+					requestDisallowInterceptRecursive(getRootView(), true);
 				}
-				break;
-			case MotionEvent.ACTION_MOVE:
-				logger.debug("Drag: {} {} :" + y, getTop(), getBottom());
-				if ( y >= getTop() && y <= getBottom())
-					drag(mAllowLeftRightMovement ? x : 0,y);
-				break;
+			}
+			break;
+			case MotionEvent.ACTION_MOVE: {
+				logger.debug("Drag: {} {} :", y, getBottom() - getTop());
+				if ( y >= 0 && y <= getBottom() - getTop())
+					drag(mAllowLeftRightMovement ? x : 0, y);
+			}
+			break;
 			case MotionEvent.ACTION_CANCEL:
 			case MotionEvent.ACTION_UP:
-			default:
+			default: {
 				mDragMode = false;
 				mEndPosition = touched;
 				logger.debug("Checking end: {} {}", mEndPosition, getCount() - 1);
@@ -262,12 +319,27 @@ public class DraggableListView extends ListView {
 				}
 				logger.debug("Dropped: {} {}", mStartPosition, mEndPosition);
 				stopDrag(mStartPosition - getFirstVisiblePosition());
-				if (mStartPosition != INVALID_POSITION && mEndPosition != INVALID_POSITION)
+				if (mStartPosition != INVALID_POSITION && mEndPosition != INVALID_POSITION && mStartPosition != mEndPosition)
 					mInnerDropListener.onDrop(mStartPosition, mEndPosition);
-				break;
+
+				// Now we need to try to turn on interception again
+				requestDisallowInterceptRecursive(getRootView(), false);
+			}
+			break;
 			}
 		}
 		return true;
+	}
+
+	// Hack because PhoneDecore doesn't pass the request to children properly.
+	private void requestDisallowInterceptRecursive(View root, boolean disallow) {
+		if (root instanceof ViewGroup) {
+			ViewGroup rootGroup = (ViewGroup)root;
+			rootGroup.requestDisallowInterceptTouchEvent(disallow);
+			for (int i = 0; i < rootGroup.getChildCount(); i++) {
+				requestDisallowInterceptRecursive(rootGroup.getChildAt(i), disallow);
+			}
+		}
 	}
 
 	private void drag(int x, int y) {
