@@ -266,6 +266,7 @@ public class DraggableListView extends ListView {
 							button.postInvalidate();
 						}
 					}
+					break;
 				case MotionEvent.ACTION_DOWN:
 					if (!mRemoving && x >= button.getLeft() && x <= button.getRight()) {
 						mRemoving = true;
