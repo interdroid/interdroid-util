@@ -24,7 +24,9 @@ public abstract class AsyncTaskWithProgressDialog<A, B, C> extends AsyncTask<A, 
 
 	@Override
 	protected void onPostExecute(C v) {
-		mDialog.dismiss();
-		mDialog = null;
+		if (mDialog != null && mDialog.isShowing()) {
+			mDialog.dismiss();
+			mDialog = null;
+		}
 	}
 }
