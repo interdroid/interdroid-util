@@ -1,6 +1,6 @@
 package interdroid.util;
 /*
-Copyright (c) 2008-2009 Vrije Universiteit, The Netherlands
+Copyright (c) 2009-2011 Vrije Universiteit, The Netherlands
 All rights reserved.
 
 Redistribution and use in source and binary forms,
