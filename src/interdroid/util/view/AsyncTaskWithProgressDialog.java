@@ -1,10 +1,16 @@
 package interdroid.util.view;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 
 public abstract class AsyncTaskWithProgressDialog<A, B, C> extends AsyncTask<A, B, C>{
+	private static final Logger logger = LoggerFactory
+			.getLogger(AsyncTaskWithProgressDialog.class);
+
 	protected Activity mContext;
 
 	private ProgressDialog mDialog;
@@ -24,9 +30,13 @@ public abstract class AsyncTaskWithProgressDialog<A, B, C> extends AsyncTask<A, 
 
 	@Override
 	protected void onPostExecute(C v) {
-		if (mDialog != null && mDialog.isShowing()) {
-			mDialog.dismiss();
-			mDialog = null;
+		try {
+			if (mDialog != null && mDialog.isShowing()) {
+				mDialog.dismiss();
+				mDialog = null;
+			}
+		} catch (Throwable e) {
+			logger.error("Exception while closing dialog.", e);
 		}
 	}
 }
