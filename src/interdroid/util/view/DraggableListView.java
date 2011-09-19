@@ -1,4 +1,38 @@
 package interdroid.util.view;
+/*
+Copyright (c) 2009-2011 Vrije Universiteit, The Netherlands
+All rights reserved.
+
+Redistribution and use in source and binary forms,
+with or without modification, are permitted provided
+that the following conditions are met:
+
+   * Redistributions of source code must retain the above copyright
+	notice, this list of conditions and the following disclaimer.
+
+   * Redistributions in binary form must reproduce the above
+	copyright notice, this list of conditions and the following
+	disclaimer in the documentation and/or other materials provided
+	with the distribution.
+
+   * Neither the name of the Vrije Universiteit nor the names of its
+	contributors may be used to endorse or promote products derived
+	from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT
+NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+*/
 
 import interdroid.util.R;
 
@@ -20,28 +54,50 @@ import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
+/**
+ * A DraggableListView which can handle drag and drop operations.
+ *
+ * @author nick <palmer@cs.vu.nl>
+ *
+ */
 public class DraggableListView extends ListView {
+	/** Logger access */
 	private static final Logger logger = LoggerFactory
 	.getLogger(DraggableListView.class);
 
+	/** Are we currently dragging? */
 	private boolean mDragMode;
+	/** Are we currently removing? */
 	private boolean mRemoving;
 
+	/** Should the dragged item be allowed to move left and right? */
 	private boolean mAllowLeftRightMovement = false;
+	/** Should we allow items to be added? */
 	private boolean mAllowAdd = true;
+	/** The resource id for the add button */
 	private int mAddResource = R.layout.draggable_add;
 
+	/** The starting position for a drag */
 	int mStartPosition;
+	/** The ending position for a drag */
 	int mEndPosition;
+	/** The offset for the drag */
 	int mDragOffset;
+	/* The top of the removed view */
 	int mRemoveTop;
+	/* The bottom of the removed view */
 	int mRemoveBottom;
 
+	/* The view being dragged */
 	ImageView mDragView;
 
+	/* The listener we notify when we are adding an item */
 	private AddListener mAddListener;
 
-	// List views do not properly measure their height. This hack gets around the problem.
+	/**
+	 * List views do not properly measure their height.
+	 * We thus implement it correctly to gets around the problem.
+	 */
 	protected void onMeasure (int widthMeasureSpec, int heightMeasureSpec) {
 		// Let our parent figure it out most measurements for us
 		super.onMeasure( widthMeasureSpec, heightMeasureSpec );
@@ -66,6 +122,11 @@ public class DraggableListView extends ListView {
 		setMeasuredDimension( getMeasuredWidth(), height );
 	}
 
+	/**
+	 * A helper so we can log measure specs easily
+	 * @param measureSpec the measure spect to decode
+	 * @return A string representation
+	 */
 	private String decodeMeasureSpec( int measureSpec ) {
 		int mode = View.MeasureSpec.getMode( measureSpec );
 		String modeString = "<> ";
@@ -85,6 +146,7 @@ public class DraggableListView extends ListView {
 		return modeString+Integer.toString( View.MeasureSpec.getSize( measureSpec ) );
 	}
 
+	/** Our listener for drop operations */
 	private DropListener mInnerDropListener =
 		new DropListener() {
 		public void onDrop(int from, int to) {
@@ -106,6 +168,7 @@ public class DraggableListView extends ListView {
 		}
 	};
 
+	/** Our handler for remove actions */
 	private RemoveListener mInnerRemoveListener =
 		new RemoveListener() {
 		public void onRemove(int which) {
@@ -125,6 +188,7 @@ public class DraggableListView extends ListView {
 		}
 	};
 
+	/** Our handler for drag actions */
 	private DragListener mInnerDragListener =
 		new DragListener() {
 
@@ -149,35 +213,69 @@ public class DraggableListView extends ListView {
 
 	};
 
+	/**
+	 * Construct the list view. Called by the android inflate system
+	 * @param context the context the view will run in
+	 * @param attrs the attributes we will take on
+	 */
 	public DraggableListView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
 
+	/**
+	 * Construct the list view. Called by the android inflate system
+	 * @param context the context the view will run in
+	 */
 	public DraggableListView(Context context) {
 		super(context);
 	}
 
+	/**
+	 * Toggle if views should be allowed to move left and right while dragging
+	 * @param b true if views should be able to move left and right
+	 */
 	public void setAllowLeftRightMovement(boolean b) {
 		mAllowLeftRightMovement = b;
 	}
 
-	/** Resource must include a Button with id interdroid.util.R.add_button **/
+	/**
+	 *
+	 */
+	/**
+	 * Sets the resource to inflate for the add button. Note that
+	 * the resource must include a Button with id interdroid.util.R.add_button
+	 * @param resc the resource to inflate for the add button
+	 */
 	public void setAddResource(int resc) {
 		mAddResource = resc;
 	}
 
+	/**
+	 * Sets if we should allow items to be added
+	 * @param b true if allow buttons should be shown
+	 */
 	public void setAllowAdd(boolean b) {
 		if(getAdapter() != null) {
-			throw new IllegalStateException("You must set allow before setting the adapter.");
+			throw new IllegalStateException(
+					"You must set allow before setting the adapter.");
 		}
 		mAllowAdd = b;
 	}
 
+	/**
+	 * The listener we will notify when an add button is clicked.
+	 * @param l the listener to notify
+	 */
 	public void setAddListener(AddListener l) {
 		mAllowAdd = true;
 		mAddListener = l;
 	}
 
+	/**
+	 * Sets the adapter this view will use to construct views. The adapter
+	 * must be an instance of DraggableAdapter or an exception will be thrown.
+	 * @param adpater the adapter for the list views
+	 */
 	@Override
 	public void setAdapter(ListAdapter adapter) {
 		if (!(adapter instanceof DraggableAdapter)) {
@@ -203,6 +301,10 @@ public class DraggableListView extends ListView {
 		super.setAdapter(adapter);
 	}
 
+	/**
+	 * Handles drag touch events.
+	 * @param ev the touch events while dragging
+	 */
 	@Override
 	public boolean onTouchEvent(MotionEvent ev) {
 		final int action = ev.getAction();
@@ -332,7 +434,13 @@ public class DraggableListView extends ListView {
 		return true;
 	}
 
-	// Hack because PhoneDecore doesn't pass the request to children properly.
+	/**
+	 * Hack to disallow intercepts of touch events on all sub views so
+	 * that we can drag properly. This is required because PhoneDecore
+	 * doesn't pass the request to children properly.
+	 * @param root the root view
+	 * @param disallow true if we should disallow intercepts
+	 */
 	private void requestDisallowInterceptRecursive(View root, boolean disallow) {
 		if (root instanceof ViewGroup) {
 			ViewGroup rootGroup = (ViewGroup)root;
@@ -343,6 +451,11 @@ public class DraggableListView extends ListView {
 		}
 	}
 
+	/**
+	 * Updates the position of the dragged view.
+	 * @param x the x position for the view
+	 * @param y the y position for the view
+	 */
 	private void drag(int x, int y) {
 		if (mDragView != null) {
 			WindowManager.LayoutParams layoutParams = (WindowManager.LayoutParams) mDragView.getLayoutParams();
@@ -354,6 +467,11 @@ public class DraggableListView extends ListView {
 		}
 	}
 
+	/**
+	 * Starts a drag operation on the given item
+	 * @param itemIndex the index of the dragged item
+	 * @param y the y offset of the touch which started the drag
+	 */
 	private void startDrag(int itemIndex, int y) {
 		stopDrag(itemIndex);
 
@@ -390,6 +508,10 @@ public class DraggableListView extends ListView {
 		mDragView = v;
 	}
 
+	/**
+	 * Handles stopping a drag of the given item
+	 * @param itemIndex the index of the item which is being dragged
+	 */
 	private void stopDrag(int itemIndex) {
 		if (mDragView != null) {
 			mInnerDragListener.onDragStop(getChildAt(itemIndex));
