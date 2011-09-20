@@ -39,6 +39,8 @@ import org.slf4j.LoggerFactory;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
 import android.os.AsyncTask;
 
 /**
@@ -50,7 +52,7 @@ import android.os.AsyncTask;
  * @param <B>
  * @param <C>
  */
-public abstract class AsyncTaskWithProgressDialog<A, B, C> extends AsyncTask<A, B, C>{
+public abstract class AsyncTaskWithProgressDialog<A, B, C> extends AsyncTask<A, B, C> {
 	/** Logger Interface */
 	private static final Logger logger = LoggerFactory
 			.getLogger(AsyncTaskWithProgressDialog.class);
@@ -83,6 +85,15 @@ public abstract class AsyncTaskWithProgressDialog<A, B, C> extends AsyncTask<A, 
 	@Override
 	protected void onPreExecute() {
 		mDialog = ProgressDialog.show(mContext, mTitle, mMessage, true, false);
+		mDialog.setOnDismissListener(new OnDismissListener() {
+
+			@Override
+			public void onDismiss(DialogInterface dialog) {
+				logger.debug("Dialog dismissed.");
+				mDialog = null;
+			}
+
+		});
 	}
 
 	/**
