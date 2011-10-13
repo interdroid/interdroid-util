@@ -15,11 +15,11 @@ import android.view.ViewGroup;
 public class ViewUtil {
 	/**
 	 * Returns the layout inflater for a given activity.
-	 * @param activity The activity to get the inflater from.
+	 * @param context The context to get the inflater from.
 	 * @return The layout inflater used by this activity
 	 */
-	public static LayoutInflater getLayoutInflater(final Activity activity) {
-		return (LayoutInflater) activity.getApplicationContext()
+	public static LayoutInflater getLayoutInflater(final Context context) {
+		return (LayoutInflater) context.getApplicationContext()
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 	}
 
@@ -39,4 +39,5 @@ public class ViewUtil {
 			});
 		}
 	}
+
 }
