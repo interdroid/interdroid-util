@@ -3,6 +3,7 @@ package interdroid.util.view;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TableRow;
 
 
 /**
@@ -163,7 +164,7 @@ public final class LayoutUtil {
 		}
 
 		/**
-		 * Sets un-weighted parameters for a LinearLayout on a view.
+		 * Sets parameters for a ViewGroup on a view.
 		 * @param params the parameters
 		 * @param view the view
 		 */
@@ -199,6 +200,98 @@ public final class LayoutUtil {
 				throw new IllegalArgumentException("Unknown LayoutParameters");
 			}
 
+		}
+
+		/**
+		 * Sets un-weighted parameters for a TableRow on a view.
+		 * @param params the parameters
+		 * @param view the view
+		 */
+		public static void setTableRowParams(
+				final LayoutParameters params, final View view) {
+
+			switch (params) {
+			case W_FILL_H_FILL:
+				view.setLayoutParams(new TableRow.LayoutParams(
+						TableRow.LayoutParams.FILL_PARENT,
+						TableRow.LayoutParams.FILL_PARENT
+						));
+				break;
+			case W_WRAP_H_WRAP:
+				view.setLayoutParams(new TableRow.LayoutParams(
+						TableRow.LayoutParams.WRAP_CONTENT,
+						TableRow.LayoutParams.WRAP_CONTENT
+						));
+				break;
+			case W_WRAP_H_FILL:
+				view.setLayoutParams(new TableRow.LayoutParams(
+						TableRow.LayoutParams.WRAP_CONTENT,
+						TableRow.LayoutParams.FILL_PARENT
+						));
+				break;
+			case W_FILL_H_WRAP:
+				view.setLayoutParams(new TableRow.LayoutParams(
+						TableRow.LayoutParams.FILL_PARENT,
+						TableRow.LayoutParams.WRAP_CONTENT
+						));
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown LayoutParameters");
+			}
+		}
+
+		/**
+		 * Sets weighted parameters for a TableRow on a view.
+		 * @param params the parameters
+		 * @param weight the weight
+		 * @param view the view
+		 */
+		public static void setTableRowParams(final LayoutParameters params,
+				final LayoutWeight weight, final View view) {
+			setTableRowParams(params, weight.getWeight(), view);
+		}
+
+		/**
+		 * Sets weighted parameters for a TableRow on a view.
+		 * @param params the parameters
+		 * @param weight the weight
+		 * @param view the view
+		 */
+		public static void setTableRowParams(final LayoutParameters params,
+				final float weight, final View view) {
+
+			switch (params) {
+			case W_FILL_H_FILL:
+				view.setLayoutParams(new TableRow.LayoutParams(
+						TableRow.LayoutParams.FILL_PARENT,
+						TableRow.LayoutParams.FILL_PARENT,
+						weight
+						));
+				break;
+			case W_WRAP_H_WRAP:
+				view.setLayoutParams(new TableRow.LayoutParams(
+						TableRow.LayoutParams.WRAP_CONTENT,
+						TableRow.LayoutParams.WRAP_CONTENT,
+						weight
+						));
+				break;
+			case W_WRAP_H_FILL:
+				view.setLayoutParams(new TableRow.LayoutParams(
+						TableRow.LayoutParams.WRAP_CONTENT,
+						TableRow.LayoutParams.FILL_PARENT,
+						weight
+						));
+				break;
+			case W_FILL_H_WRAP:
+				view.setLayoutParams(new TableRow.LayoutParams(
+						TableRow.LayoutParams.FILL_PARENT,
+						TableRow.LayoutParams.WRAP_CONTENT,
+						weight
+						));
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown LayoutParameters");
+			}
 		}
 	}
 }
