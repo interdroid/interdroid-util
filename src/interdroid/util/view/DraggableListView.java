@@ -77,6 +77,8 @@ public class DraggableListView extends ListView {
 	/** The resource id for the add button */
 	private int mAddResource = R.layout.draggable_add;
 
+	private View mEmptyText;
+
 	/** The starting position for a drag */
 	int mStartPosition;
 	/** The ending position for a drag */
@@ -297,6 +299,23 @@ public class DraggableListView extends ListView {
 
 			});
 			addHeaderView(header);
+
+
+			View footer = inflate(getContext(), mAddResource, null);
+			ImageButton footerAddButton = (ImageButton) footer.findViewById(R.id.add_button);
+			footerAddButton.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					logger.debug("Add button clicked.");
+					if (mAddListener != null) {
+						logger.debug("Firing add event.");
+						mAddListener.onAddItem();
+					}
+				}
+
+			});
+			addFooterView(footer);
 		}
 		super.setAdapter(adapter);
 	}
