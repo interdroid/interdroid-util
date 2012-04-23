@@ -2,9 +2,17 @@ package interdroid.util;
 
 import java.util.Map.Entry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import android.content.ContentValues;
+import android.database.Cursor;
 
 public final class DbUtil {
+    /**
+     * Access to Logger.
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(DbUtil.class);
 
     /**
      * No construction.
@@ -17,12 +25,45 @@ public final class DbUtil {
      * @return the quoted column name
      */
     public static String quoteColumnName(final String columnName) {
-        if (columnName.charAt(0) != '\'') {
-            return "'" + columnName + "'";
+        if (columnName.charAt(0) != '\"') {
+            return "\"" + columnName + "\"";
         }
         return columnName;
     }
 
+    /**
+     * Returns an array of quoted column names
+     * @param columnNames the names of the columns to quote.
+     * @return an array of quoted column names
+     */
+    public static String[] quoteColumnNames(final String[] columnNames) {
+        String[] ret = null;
+        if (columnNames != null) {
+            ret = new String[columnNames.length];
+            for (int i = 0; i < columnNames.length; i++) {
+                ret[i] = quoteColumnName(columnNames[i]);
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * Returns the index for a field.
+     * @param c the cursor to check in
+     * @param columnName the column name to look for
+     * @return the index, or -1
+     */
+    public static int getFieldIndex(Cursor c, String columnName) {
+        int index = c.getColumnIndex(columnName);
+        if (index == -1) {
+            index = c.getColumnIndex(quoteColumnName(columnName));
+        }
+        if (index == -1) {
+            LOG.warn("Unable to find column index: {} in {}",
+                    columnName, c.getColumnNames());
+        }
+        return index;
+    }
 
     /**
      * Android does not quote identifiers so we have to handle that.
