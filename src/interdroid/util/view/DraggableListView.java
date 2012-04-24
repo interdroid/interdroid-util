@@ -339,6 +339,9 @@ public class DraggableListView extends ListView {
 			View tView = getChildAt(touched);
 			if (tView != null) {
 				tView = tView.findViewById(R.id.drag_handle);
+				if (tView == null) {
+					return false;
+				}
 				minX = tView.getLeft();
 				maxX = tView.getRight();
 			}
